@@ -1,6 +1,6 @@
 # 迁移指南
 
-将 Agent Reach 代码 + Skills 同步到新设备/云主机。
+将 Research Agent 代码 + Skills 同步到新设备/云主机。
 
 ## 前提条件
 
@@ -20,9 +20,10 @@ bash scripts/migrate-skills.sh
 | 步骤 | 内容 | 目标路径 |
 |------|------|----------|
 | 0 | 拉取最新代码 + `pip install -e .` 重装 Python 包 | 当前仓库目录 |
-| 1 | 覆盖写入 `agent-reach` skill | `~/.claude/skills/agent-reach/SKILL.md` + `~/.openclaw/skills/agent-reach/SKILL.md` |
+| 1 | 覆盖写入 `research-agent` skill | `~/.claude/skills/research-agent/SKILL.md` + `~/.openclaw/skills/research-agent/SKILL.md` |
 | 2 | 覆盖写入 `user-research-report` skill | `~/.claude/skills/user-research-report/SKILL.md` + `~/.openclaw/skills/user-research-report/SKILL.md` |
-| 3 | 确保报告输出目录存在 | `~/Desktop/我的知识库/用户调研/` |
+| 3 | 清理旧名 `agent-reach` skill 目录 | `~/.claude/skills/agent-reach/` + `~/.openclaw/skills/agent-reach/` |
+| 4 | 确保报告输出目录存在 | `~/Desktop/我的知识库/用户调研/` |
 
 ## 本次迁移涉及的改动 (2026-02-28)
 
@@ -37,9 +38,9 @@ bash scripts/migrate-skills.sh
 - 删除 tests/、docs/、CI（精简仓库）
 - `pyproject.toml` 依赖简化
 
-### agent-reach skill
+### research-agent skill
 
-相比仓库内置的 `agent_reach/skill/SKILL.md`（基础版），迁移脚本安装的是**增强版**，额外包含：
+相比仓库内置的 `research_agent/skill/SKILL.md`（基础版），迁移脚本安装的是**增强版**，额外包含：
 
 - **5 步强制工作流**：调用 skill → 采集数据 → 下载图片 → 加载报告模板 → 生成报告
 - **XHS 详细用法**：API 字段映射、xsec_token 过期处理、rate limiting
@@ -56,11 +57,11 @@ bash scripts/migrate-skills.sh
 
 ```bash
 # 检查 Python 包
-agent-reach version
-agent-reach doctor
+research-agent version
+research-agent doctor
 
 # 检查 skill 文件
-cat ~/.claude/skills/agent-reach/SKILL.md | head -5
+cat ~/.claude/skills/research-agent/SKILL.md | head -5
 cat ~/.claude/skills/user-research-report/SKILL.md | head -5
 ```
 

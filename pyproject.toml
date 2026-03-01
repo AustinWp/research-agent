@@ -3,7 +3,7 @@ requires = ["setuptools>=68.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "agent-reach"
+name = "research-agent"
 version = "1.1.0"
 description = "Give your AI Agent eyes to see the entire internet. Search + Read 10+ platforms."
 readme = "USAGE.md"
@@ -42,15 +42,15 @@ browser = ["playwright>=1.40"]
 cookies = ["browser-cookie3>=0.19"]
 
 [project.urls]
-Homepage = "https://github.com/AustinWp/Agent-Reach"
-Repository = "https://github.com/AustinWp/Agent-Reach"
-Issues = "https://github.com/AustinWp/Agent-Reach/issues"
+Homepage = "https://github.com/AustinWp/research-agent"
+Repository = "https://github.com/AustinWp/research-agent"
+Issues = "https://github.com/AustinWp/research-agent/issues"
 
 [project.scripts]
-agent-reach = "agent_reach.cli:main"
+research-agent = "research_agent.cli:main"
 
 [tool.setuptools.packages.find]
-include = ["agent_reach*"]
+include = ["research_agent*"]
 
 [tool.setuptools.package-data]
-agent_reach = ["**/*.md"]
+research_agent = ["**/*.md"]

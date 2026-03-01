@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ============================================================
-# Agent Reach — 一键迁移 (代码 + Skills)
+# Research Agent — 一键迁移 (代码 + Skills)
 # 日期: 2026-02-28
 # 用途: 在新设备/云主机上运行，同步最新代码并覆盖安装 skill
 # 使用: bash migrate-skills.sh
@@ -26,7 +26,7 @@ else
 fi
 
 # --------------------------------------------------
-# 0. 更新 agent-reach 代码仓库 + 重装 Python 包
+# 0. 更新 research-agent 代码仓库 + 重装 Python 包
 # --------------------------------------------------
 REPO_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 
@@ -47,7 +47,7 @@ if [ -d "$REPO_DIR/.git" ]; then
   echo ""
   echo ">>> 重新安装 Python 包 (editable mode)"
   if $PIP install -e "$REPO_DIR" 2>&1 | tail -5; then
-    log "agent-reach Python 包已更新 ($(agent-reach version 2>/dev/null || echo 'unknown'))"
+    log "research-agent Python 包已更新 ($(research-agent version 2>/dev/null || echo 'unknown'))"
   else
     warn "pip install 失败，请手动执行: $PIP install -e $REPO_DIR"
   fi
@@ -59,18 +59,18 @@ fi
 echo ""
 
 # --------------------------------------------------
-# 1. 安装 agent-reach skill（Claude Code + OpenClaw）
+# 1. 安装 research-agent skill（Claude Code + OpenClaw）
 # --------------------------------------------------
-SKILL_SRC="$PROJECT_DIR/skills/agent-reach/SKILL.md"
+SKILL_SRC="$PROJECT_DIR/skills/research-agent/SKILL.md"
 if [ ! -f "$SKILL_SRC" ]; then
-  warn "找不到 $SKILL_SRC — 跳过 agent-reach skill 安装"
+  warn "找不到 $SKILL_SRC — 跳过 research-agent skill 安装"
 else
   for SKILL_DIR in \
-    "$HOME/.claude/skills/agent-reach" \
-    "$HOME/.openclaw/skills/agent-reach"; do
+    "$HOME/.claude/skills/research-agent" \
+    "$HOME/.openclaw/skills/research-agent"; do
     mkdir -p "$SKILL_DIR"
     cp "$SKILL_SRC" "$SKILL_DIR/SKILL.md"
-    log "agent-reach skill → $SKILL_DIR/SKILL.md"
+    log "research-agent skill → $SKILL_DIR/SKILL.md"
   done
 fi
 
@@ -91,23 +91,36 @@ else
 fi
 
 # --------------------------------------------------
-# 3. 创建用户调研报告目录
+# 3. 清理旧名 skill 目录（agent-reach → research-agent 改名残留）
+# --------------------------------------------------
+for OLD_DIR in \
+  "$HOME/.claude/skills/agent-reach" \
+  "$HOME/.openclaw/skills/agent-reach"; do
+  if [ -d "$OLD_DIR" ]; then
+    rm -rf "$OLD_DIR"
+    log "已清理旧名目录: $OLD_DIR"
+  fi
+done
+
+# --------------------------------------------------
+# 4. 创建用户调研报告目录
 # --------------------------------------------------
 mkdir -p "$HOME/Desktop/我的知识库/用户调研"
 log "报告目录 → ~/Desktop/我的知识库/用户调研/"
 
 # --------------------------------------------------
-# 4. 完成
+# 5. 完成
 # --------------------------------------------------
 echo ""
 echo "========================================="
 echo "  迁移完成！已覆盖安装:"
-echo "  [0] agent-reach 代码 + Python 包"
-echo "  [1] agent-reach skill (含 XHS/图片下载)"
+echo "  [0] research-agent 代码 + Python 包"
+echo "  [1] research-agent skill (含 XHS/图片下载)"
 echo "  [2] user-research-report skill (文件夹格式)"
-echo "  [3] 用户调研报告目录"
+echo "  [3] 清理旧名 agent-reach skill 目录"
+echo "  [4] 用户调研报告目录"
 echo "========================================="
 echo ""
 echo "验证:"
-echo "  agent-reach doctor"
-echo "  agent-reach version"
+echo "  research-agent doctor"
+echo "  research-agent version"

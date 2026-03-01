@@ -1,101 +1,101 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+本文件为 Claude Code 提供项目上下文和开发指引。
 
-## Project Overview
+## 项目概述
 
-Agent Reach is a unified CLI and Python library that provides standardized read and search capabilities across 10+ internet platforms (Twitter/X, Reddit, YouTube, GitHub, Bilibili, XiaoHongShu, RSS, Exa, and generic web). It wraps external tools (gh, yt-dlp, bird, mcporter) behind a pluggable channel architecture with async-first APIs.
+Research Agent 是一个统一的 CLI 工具和 Python 库，提供跨 10+ 互联网平台（Twitter/X、Reddit、YouTube、GitHub、Bilibili、小红书、RSS、Exa、通用网页）的标准化读取和搜索能力。通过可插拔的 Channel 架构封装外部工具（gh、yt-dlp、bird、mcporter），采用 async-first API 设计。
 
-## Development Commands
+## 开发命令
 
 ```bash
-# Install in editable dev mode
+# 开发模式安装
 pip install -e .
 
-# Install with all optional features
+# 安装所有可选功能
 pip install -e ".[all]"
 
-# Run CLI directly
-agent-reach doctor          # Health check all channels
-agent-reach read <url>      # Test reading a URL
-agent-reach search "query"  # Test web search
+# CLI 命令
+research-agent doctor          # 健康检查
+research-agent read <url>      # 读取 URL
+research-agent search "query"  # 搜索
 
-# Run as Python module (alternative)
-python -m agent_reach.cli doctor
+# 以 Python 模块运行
+python -m research_agent.cli doctor
 ```
 
-There is no test suite or linter configured in this project.
+本项目未配置测试框架或 linter。
 
-## Architecture
+## 架构
 
-### Channel System (core abstraction)
+### Channel 系统（核心抽象）
 
-Every platform is a **Channel** — a class inheriting from `agent_reach/channels/base.py:Channel` (ABC). Channels implement:
+每个平台对应一个 **Channel** —— 继承自 `research_agent/channels/base.py:Channel`（ABC）。Channel 需实现：
 
-- `can_handle(url) -> bool` — URL routing (first match wins)
-- `read(url, config) -> ReadResult` — read content from a URL
-- `search(query, ...) -> List[SearchResult]` — search the platform (optional)
-- `check(config) -> Tuple[str, str]` — health status reporting
+- `can_handle(url) -> bool` —— URL 路由（首个匹配生效）
+- `read(url, config) -> ReadResult` —— 读取内容
+- `search(query, ...) -> List[SearchResult]` —— 搜索（可选）
+- `check(config) -> Tuple[str, str]` —— 健康状态
 
-Channels are registered in order in `agent_reach/channels/__init__.py:ALL_CHANNELS`. **Order matters** — `WebChannel` is last as the universal fallback.
+Channel 注册顺序在 `research_agent/channels/__init__.py:ALL_CHANNELS` 中。**顺序重要** —— `WebChannel` 在最后作为兜底。
 
-### Data Flow
+### 数据流
 
 ```
-CLI (cli.py) or Library (core.py)
-  → AgentReach.read(url) / .search(query)
-    → channels/__init__.py:get_channel_for_url(url)  # URL routing
-      → specific Channel.read() / .search()
-        → subprocess call to external tool (gh, yt-dlp, bird, mcporter)
-          → parse output into ReadResult / SearchResult
+CLI (cli.py) 或 Library (core.py)
+  → ResearchAgent.read(url) / .search(query)
+    → channels/__init__.py:get_channel_for_url(url)  # URL 路由
+      → 具体 Channel.read() / .search()
+        → subprocess 调用外部工具 (gh, yt-dlp, bird, mcporter)
+          → 解析输出为 ReadResult / SearchResult
 ```
 
-### Key Files
+### 关键文件
 
-| File | Purpose |
-|------|---------|
-| `agent_reach/core.py` | `AgentReach` class — main programmatic API |
-| `agent_reach/cli.py` | CLI entry point (~900 lines, all commands) |
-| `agent_reach/channels/base.py` | `Channel` ABC, `ReadResult`, `SearchResult` dataclasses |
-| `agent_reach/channels/__init__.py` | Channel registry and URL routing |
-| `agent_reach/config.py` | Config loading from `~/.agent-reach/config.yaml` + env vars |
-| `agent_reach/doctor.py` | Health check system aggregating channel status |
-| `agent_reach/integrations/mcp_server.py` | MCP protocol server (8 tools) |
-| `config/mcporter.json` | MCP server endpoints for Exa and XiaoHongShu |
+| 文件 | 用途 |
+|------|------|
+| `research_agent/core.py` | `ResearchAgent` 类 —— 主要编程 API |
+| `research_agent/cli.py` | CLI 入口（~900 行，所有命令） |
+| `research_agent/channels/base.py` | `Channel` ABC、`ReadResult`、`SearchResult` 数据类 |
+| `research_agent/channels/__init__.py` | Channel 注册表和 URL 路由 |
+| `research_agent/config.py` | 配置加载，路径 `~/.research-agent/config.yaml` + 环境变量 |
+| `research_agent/doctor.py` | 健康检查，聚合各 Channel 状态 |
+| `research_agent/integrations/mcp_server.py` | MCP 协议服务器（8 个工具） |
+| `config/mcporter.json` | Exa 和小红书的 MCP 端点配置 |
 
-### Channel Backends
+### Channel 后端
 
-Each channel wraps external CLI tools via subprocess. Some have fallback chains:
+每个 Channel 通过 subprocess 调用外部 CLI 工具，部分有降级链：
 
-- **Twitter**: bird CLI → Jina Reader fallback
-- **GitHub**: gh CLI → Jina Reader fallback
+- **Twitter**: bird CLI → Jina Reader 降级
+- **GitHub**: gh CLI → Jina Reader 降级
 - **YouTube/Bilibili**: yt-dlp
-- **XiaoHongShu/Exa**: mcporter (MCP bridge to Docker containers)
-- **Web**: Jina Reader API (universal fallback)
-- **RSS**: feedparser (pure Python)
+- **小红书/Exa**: mcporter（MCP 桥接 Docker 容器）
+- **Web**: Jina Reader API（通用兜底）
+- **RSS**: feedparser（纯 Python）
 
-### Tier System
+### Tier 分级
 
-Channels declare a `tier` (0/1/2) indicating setup complexity:
-- **Tier 0**: Zero config — works immediately (Web, YouTube, RSS, Twitter read, GitHub public)
-- **Tier 1**: Free setup — needs mcporter (Exa search)
-- **Tier 2**: User config — needs tokens/proxy/Docker (Twitter search, Reddit, XiaoHongShu)
+Channel 声明 `tier`（0/1/2）表示配置复杂度：
+- **Tier 0**: 零配置 —— 装好即用（Web、YouTube、RSS、Twitter 阅读、GitHub 公开）
+- **Tier 1**: 免费配置 —— 需要 mcporter（Exa 搜索）
+- **Tier 2**: 需用户配置 —— 需要 token/代理/Docker（Twitter 搜索、Reddit、小红书）
 
-### Adding a New Channel
+### 添加新 Channel
 
-1. Create `agent_reach/channels/{platform}.py`
-2. Subclass `Channel`, implement `can_handle()`, `read()`, optionally `search()`
-3. Register in `agent_reach/channels/__init__.py:ALL_CHANNELS` (before `WebChannel`)
+1. 创建 `research_agent/channels/{platform}.py`
+2. 继承 `Channel`，实现 `can_handle()`、`read()`，可选实现 `search()`
+3. 在 `research_agent/channels/__init__.py:ALL_CHANNELS` 中注册（放在 `WebChannel` 之前）
 
-### Configuration
+### 配置
 
-Config is loaded from `~/.agent-reach/config.yaml` with environment variable overrides. The `Config` class in `config.py` maps feature names to required config keys (`FEATURE_REQUIREMENTS` dict).
+配置从 `~/.research-agent/config.yaml` 加载，支持环境变量覆盖。`config.py` 中的 `Config` 类通过 `FEATURE_REQUIREMENTS` 字典映射功能名到所需配置键。
 
-## External Dependencies
+## 外部依赖
 
-This project relies heavily on external CLI tools installed on the system:
-- `gh` (GitHub CLI)
-- `yt-dlp` (video platforms)
-- `bird` (Twitter, optional)
-- `mcporter` (MCP bridge for Exa/XiaoHongShu)
-- Docker (XiaoHongShu MCP container on port 18060)
+本项目依赖系统安装的外部 CLI 工具：
+- `gh`（GitHub CLI）
+- `yt-dlp`（视频平台）
+- `bird`（Twitter，可选）
+- `mcporter`（Exa/小红书 MCP 桥接）
+- Docker（小红书 MCP 容器，端口 18060）
