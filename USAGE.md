@@ -2,10 +2,10 @@
 
 ## 环境信息
 
-- 虚拟环境: `/Users/austin/Desktop/MyAgent/reach-agent/.venv`
-- 激活虚拟环境: `source /Users/austin/Desktop/MyAgent/reach-agent/.venv/bin/activate`
+- 虚拟环境: `/Users/austin/Desktop/MyAgent/research_agent/.venv`
+- 激活虚拟环境: `source /Users/austin/Desktop/MyAgent/research_agent/.venv/bin/activate`
 - 激活后可直接使用 `research-agent` 命令，否则需用完整路径:
-  `/Users/austin/Desktop/MyAgent/reach-agent/.venv/bin/research-agent`
+  `/Users/austin/Desktop/MyAgent/research_agent/.venv/bin/research-agent`
 
 ## 当前渠道状态 (8/9)
 

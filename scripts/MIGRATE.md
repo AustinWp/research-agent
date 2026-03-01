@@ -5,12 +5,12 @@
 ## 前提条件
 
 - 目标机器已安装 Git、Python 3.10+
-- 已 clone 过 reach-agent 仓库（任意分支均可，脚本会自动切换）
+- 已 clone 过 research_agent 仓库（任意分支均可，脚本会自动切换）
 
 ## 一键迁移
 
 ```bash
-cd ~/Desktop/MyAgent/reach-agent
+cd ~/Desktop/MyAgent/research_agent
 git fetch --all && git checkout refactor-v1.1 && git pull
 bash scripts/migrate-skills.sh
 ```

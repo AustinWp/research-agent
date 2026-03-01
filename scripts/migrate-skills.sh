@@ -53,7 +53,7 @@ if [ -d "$REPO_DIR/.git" ]; then
   fi
 else
   warn "未找到 git 仓库: $REPO_DIR — 跳过代码更新"
-  warn "请先 git clone 仓库，或手动安装: pip install -e /path/to/reach-agent"
+  warn "请先 git clone 仓库，或手动安装: pip install -e /path/to/research_agent"
 fi
 
 echo ""
