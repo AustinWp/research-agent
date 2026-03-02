@@ -4,7 +4,9 @@
 
 ## 项目概述
 
-Research Agent 是一个统一的 CLI 工具和 Python 库，提供跨 10+ 互联网平台（Twitter/X、Reddit、YouTube、GitHub、Bilibili、小红书、RSS、Exa、通用网页）的标准化读取和搜索能力。通过可插拔的 Channel 架构封装外部工具（gh、yt-dlp、bird、mcporter），采用 async-first API 设计。
+Research Agent（v1.1.0）是一个统一的 CLI 工具和 Python 库，提供跨 10+ 互联网平台（Twitter/X、Reddit、YouTube、GitHub、Bilibili、小红书、RSS、Exa、通用网页）的标准化读取和搜索能力。通过可插拔的 Channel 架构封装外部工具（gh、yt-dlp、bird、mcporter），采用 async-first API 设计。
+
+项目同时提供 Claude Code Skill 定义（`skills/` 目录）和 MCP Server（`research_agent/integrations/mcp_server.py`），可作为 AI Agent 的感知层接入。
 
 ## 开发命令
 
@@ -61,7 +63,18 @@ CLI (cli.py) 或 Library (core.py)
 | `research_agent/config.py` | 配置加载，路径 `~/.research-agent/config.yaml` + 环境变量 |
 | `research_agent/doctor.py` | 健康检查，聚合各 Channel 状态 |
 | `research_agent/integrations/mcp_server.py` | MCP 协议服务器（8 个工具） |
+| `research_agent/guides/` | 各平台配置指南（setup-exa/twitter/reddit/xiaohongshu/wechat/groq） |
 | `config/mcporter.json` | Exa 和小红书的 MCP 端点配置 |
+
+### Skills（Claude Code 集成）
+
+`skills/` 目录包含 3 个独立 Skill 定义：
+
+| Skill | 用途 |
+|-------|------|
+| `skills/research-agent/SKILL.md` | 完整使用指南，含小红书工作流、图片下载等 |
+| `skills/research-agent-mcp/SKILL.md` | 轻量安装引导，面向 MCP 集成 |
+| `skills/user-research-report/SKILL.md` | 调研报告输出模板，定义命名规则和 Markdown 格式 |
 
 ### Channel 后端
 
@@ -99,3 +112,10 @@ Channel 声明 `tier`（0/1/2）表示配置复杂度：
 - `bird`（Twitter，可选）
 - `mcporter`（Exa/小红书 MCP 桥接）
 - Docker（小红书 MCP 容器，端口 18060）
+
+## 注意事项
+
+- `WebChannel` 必须在 `ALL_CHANNELS` 最后，作为兜底
+- 小红书写操作（发帖/点赞/评论）在 Skill 中被禁止，仅允许读取
+- CLI 入口 `cli.py` 体量较大（~900 行），所有命令集中在一个文件中
+- 本项目未配置测试框架或 linter
